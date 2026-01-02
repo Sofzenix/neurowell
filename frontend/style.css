@@ -1,0 +1,195 @@
+/* BASIC SETUP */
+* { margin:0; padding:0; box-sizing:border-box;}
+body { background: linear-gradient(135deg,#7B61FF,#3F8CFF); color:white; overflow-x:hidden; }
+
+/* GLASS EFFECT */
+.floating-card {
+  background: rgba(255,255,255,0.08);
+  backdrop-filter: blur(18px);
+  border-radius: 20px;
+  padding: 25px;
+  margin-bottom: 25px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.floating-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+}
+
+/* ANIMATIONS */
+.animate-fade-in { animation: fadeIn 1s ease forwards; opacity:0; }
+.animate-slide-up { animation: slideUp 0.7s ease forwards; opacity:0; }
+@keyframes fadeIn { to {opacity:1;} }
+@keyframes slideUp { to {opacity:1; transform:translateY(0);} }
+
+/* LOGIN PAGE */
+.login-body { display:flex; justify-content:center; align-items:center; height:100vh; }
+.login-card { width:350px; text-align:center; }
+
+/* Logo */
+.logo {
+  width:120px;
+  height:auto;
+  display:block;
+  margin:0 auto 15px;
+  transition: transform 0.3s ease;
+}
+.logo:hover { transform: scale(1.05); }
+
+/* Profile Image */
+.profile-pic {
+  width:100px;
+  height:100px;
+  border-radius:50%;
+  object-fit:cover;
+  border:3px solid rgba(44,182,125,0.5);
+  margin:15px auto;
+  display:block;
+  box-shadow:0 4px 15px rgba(0,0,0,0.3);
+  transition: transform 0.3s ease;
+}
+.profile-pic:hover { transform: scale(1.05); }
+
+.login-card input { width:100%; padding:10px; margin:10px 0; border-radius:10px; border:none; outline:none; }
+.btn-primary { background:#d7520b; border:none; color:white; padding:12px 25px; border-radius:10px; cursor:pointer; transition:0.3s; }
+.btn-primary:hover { background:#23a26f; }
+.link { color:#81ff47; text-decoration:none; transition:0.3s; }
+.link:hover { color:#5448f7; text-decoration:underline; }
+
+/* SIDEBAR */
+/* SIDEBAR */
+.sidebar {
+  width:250px;
+  background:rgb(11, 11, 72);
+  height:100vh;
+  position:fixed;
+  left:0;
+  top:0;
+  padding-top:20px;
+  backdrop-filter:blur(15px);
+  transition:width 0.3s;
+  overflow:hidden;
+}
+.sidebar.collapsed {
+  width:0px;
+}
+.sidebar-header {
+  text-align:center;
+  position:relative;
+}
+.sidebar-header h2 {
+  color:#ffffff;
+  font-size:1.6rem;
+}
+.toggle-btn {
+  position:absolute;
+  top:5px;
+  right:5px;
+  cursor:pointer;
+  font-size:1.3rem;
+  transition:0.3s;
+}
+.sidebar ul {
+  list-style:none;
+  padding:20px 0;
+}
+.sidebar ul li {
+  padding:15px;
+  border-left:3px solid transparent;
+  transition:0.3s;
+  cursor:pointer;
+  white-space:nowrap;
+}
+.sidebar ul li:hover {
+  background:#9302c4;
+  border-left:3px solid #00ff95;
+}
+
+/* MAIN CONTENT */
+.main-content {
+  margin-left:250px;
+  padding:40px;
+  transition:margin-left 0.3s;
+}
+
+/* FIXED — when sidebar is closed */
+.sidebar.collapsed ~ .main-content {
+  margin-left:0;
+}
+
+.page {
+  display:none;
+}
+.page.active {
+  display:block;
+}
+
+.sidebar ul li {
+    display: flex;
+    align-items: center;
+    gap: 12px;        /* Space between icon and text */
+    font-size: 1.1rem;
+    color: white;
+}
+
+.sidebar ul li i {
+    width: 20px;     /* keeps alignment clean */
+    font-size: 1.2rem;
+}
+
+.analyzer-controls button i {
+    margin-right: 8px;   /* space between icon and text */
+    font-size: 1.1rem;
+    vertical-align: middle;
+}
+
+
+/* PROFILE */
+.profile-card { text-align:center; }
+.profile-card img { width:120px; height:120px; border-radius:50%; }
+
+/* CHAT */
+#chat-box {
+  height: 500px;
+  overflow-y: auto;
+  background: rgba(255,255,255,0.05);
+  border-radius: 10px;
+  padding: 10px;
+  margin-bottom: 10px;
+  color: white;
+}
+
+.chat-message {
+  margin-bottom: 12px;
+  line-height: 1.5;
+}
+
+.chat-controls {
+  display: flex;
+  gap: 10px;
+}
+
+.btn-primary {
+  background: #4CAF50;
+  padding: 10px 20px;
+  border-radius: 8px;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+
+/* ANALYZER */
+.analyzer-controls { display:flex; gap:10px; margin-bottom:10px; }
+#videoFeed { margin-top:10px; border-radius:10px; }
+
+/* REPORT */
+#report-output { margin-top:15px; background:rgba(255,255,255,0.08); padding:15px; border-radius:10px; }
+
+/* PROGRESS BARS */
+.progress-bar { margin:10px 0; }
+.progress-bar span { display:block; margin-bottom:5px; }
+.progress { width:100%; height:20px; background:rgba(255,255,255,0.1); border-radius:10px; overflow:hidden; }
+.progress .fill { height:100%; background:#2cb67d; transition:width 1s ease; }
+

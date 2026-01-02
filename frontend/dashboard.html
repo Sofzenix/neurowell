@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Neurowell Dashboard</title>
+<link rel="stylesheet" href="style.css" />
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <img src="https://tse2.mm.bing.net/th/id/OIP.GPQtpNOPao_cpu0yYctUVQHaHa?pid=Api&P=0&h=180" class="logo-small" alt="logo" />
+    <h2>Neurowell</h2>
+  
+  </div>
+  <ul>
+    <li onclick="showPage('profile')">
+        <i class="fa-solid fa-user"></i> 
+        <span>Profile</span>
+    </li>
+
+    <li onclick="showPage('dashboard')">
+        <i class="fa-solid fa-chart-line"></i>
+        <span>Dashboard</span>
+    </li>
+
+    <li onclick="showPage('chat')">
+        <i class="fa-solid fa-comments"></i>
+        <span>AI Companion</span>
+    </li>
+
+    <li onclick="showPage('analyzer')">
+        <i class="fa-solid fa-mask"></i>
+        <span>Analyzer</span>
+    </li>
+
+    <li onclick="showPage('report')">
+        <i class="fa-solid fa-file-lines"></i>
+        <span>Reports</span>
+    </li>
+
+    <li onclick="logout()">
+        <i class="fa-solid fa-right-from-bracket"></i>
+        <span>Logout</span>
+    </li>
+</ul>
+
+</div>
+ <!-- BUTTON OUTSIDE -->
+<span class="toggle-btn" onclick="toggleSidebar()">☰</span>
+<!-- MAIN CONTENT -->
+<div class="main-content">
+
+  <!-- PROFILE -->
+  <section id="profile" class="page active">
+    <div class="floating-card profile-card animate-slide-up">
+      <img src="https://tse4.mm.bing.net/th/id/OIP.ji68lsUMUcWdpsNmQ48k_QAAAA?pid=Api&P=0&h=180" alt="User" />
+      <h2 id="profile-name">Arib Khan</h2>
+      <p>Email: khanarib075@gmail.com</p>
+      <p>Mood Score: <span id="moodScore">82%</span></p>
+    </div>
+  </section>
+
+  <!-- DASHBOARD -->
+  <section id="dashboard" class="page">
+    <div class="floating-card animate-slide-up">
+      <h2>📊 Emotion Trends</h2>
+      <canvas id="emotionRadar"></canvas>
+    </div>
+    <div class="floating-card animate-slide-up">
+      <h2>📈 Weekly Mood Progress</h2>
+      <canvas id="moodBar"></canvas>
+    </div>
+    <div class="floating-card animate-slide-up">
+      <h2>🎯 Emotion Distribution</h2>
+      <canvas id="moodPie"></canvas>
+    </div>
+    <div class="floating-card animate-slide-up">
+      <h2>💚 Mood Progress</h2>
+      <div class="progress-bar">
+        <span>Happiness</span>
+        <div class="progress"><div class="fill" style="width:82%"></div></div>
+      </div>
+      <div class="progress-bar">
+        <span>Calmness</span>
+        <div class="progress"><div class="fill" style="width:70%"></div></div>
+      </div>
+      <div class="progress-bar">
+        <span>Anxiety</span>
+        <div class="progress"><div class="fill" style="width:35%"></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CHAT -->
+<section id="chat" class="page">
+  <div class="floating-card animate-slide-up">
+    <h2><i class="fa-regular fa-comments"></i>Ask To Neurowell AI Chatbot</h2>
+
+    <div id="chat-box"></div>
+
+    <div class="chat-controls">
+      <input type="text" id="chat-input" placeholder="Type your message..." />
+      <button class="btn-primary" onclick="sendMessage()">Send</button>
+    </div>
+  </div>
+</section>
+
+
+
+
+  <!-- ANALYZER -->
+  <section id="analyzer" class="page">
+    <div class="floating-card animate-slide-up">
+      <h2>🎭 Real-Time Emotion Analysis</h2>
+      <p>Analyze emotions via face, voice, and text</p>
+      <div class="analyzer-controls">
+        <div class="analyzer-controls">
+    <button class="btn-primary" onclick="startCamera()">
+        <i class="fa-solid fa-camera"></i> Face
+    </button>
+    <button class="btn-primary" onclick="startVoice()">
+        <i class="fa-solid fa-microphone"></i> Voice
+    </button>
+    <button class="btn-primary" onclick="analyzeText()">
+        <i class="fa-solid fa-file-lines"></i> Text
+    </button>
+</div>
+
+      </div>
+      <video id="videoFeed" width="400" height="300" autoplay></video>
+      <div id="analyze-result"></div>
+    </div>
+  </section>
+
+  <!-- REPORT -->
+  <section id="report" class="page">
+    <div class="floating-card animate-slide-up">
+      <h2>📑 Generate Emotional Report</h2>
+      <button class="btn-primary" onclick="generateReport()">Generate Report</button>
+      <div id="report-output"></div>
+    </div>
+  </section>
+
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
