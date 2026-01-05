@@ -1,0 +1,18 @@
+# Database files - DO NOT UPLOAD!
+*.db
+*.sqlite
+*.db-journal
+
+# Python cache
+__pycache__/
+*.py[cod]
+*.pyc
+
+# Environment files
+.env
+.venv
+venv/
+
+# Logs
+*.log
+logs/
