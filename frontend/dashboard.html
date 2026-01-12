@@ -115,29 +115,38 @@
 
 
 
-  <!-- ANALYZER -->
-  <section id="analyzer" class="page">
-    <div class="floating-card animate-slide-up">
-      <h2>🎭 Real-Time Emotion Analysis</h2>
-      <p>Analyze emotions via face, voice, and text</p>
-      <div class="analyzer-controls">
-        <div class="analyzer-controls">
-    <button class="btn-primary" onclick="startCamera()">
-        <i class="fa-solid fa-camera"></i> Face
-    </button>
-    <button class="btn-primary" onclick="startVoice()">
-        <i class="fa-solid fa-microphone"></i> Voice
-    </button>
-    <button class="btn-primary" onclick="analyzeText()">
-        <i class="fa-solid fa-file-lines"></i> Text
-    </button>
-</div>
+ <!-- ANALYZER -->
+<section id="analyzer" class="page">
+  <div class="floating-card animate-slide-up">
+    <h2>🎭 Real-Time Emotion Analysis</h2>
+    <p>Analyze emotions via face, voice, and text</p>
 
-      </div>
-      <video id="videoFeed" width="400" height="300" autoplay></video>
-      <div id="analyze-result"></div>
+    <textarea 
+  id="textInput"
+  placeholder="Type how you are feeling..."
+  rows="3"
+  style="width:100%; margin:10px 0; padding:10px; border-radius:8px; display:none;"
+></textarea>
+
+
+    <!-- Controls -->
+    <div class="analyzer-controls">
+      <button class="btn-primary" onclick="startCamera()">
+        <i class="fa-solid fa-camera"></i> Face
+      </button>
+      <button class="btn-primary" onclick="startVoice()">
+        <i class="fa-solid fa-microphone"></i> Voice
+      </button>
+      <button class="btn-primary" onclick="analyzeText()">
+        <i class="fa-solid fa-file-lines"></i> Text
+      </button>
     </div>
-  </section>
+
+    <video id="videoFeed" width="400" height="300" autoplay></video>
+    <div id="analyze-result"></div>
+  </div>
+</section>
+
 
   <!-- REPORT -->
   <section id="report" class="page">

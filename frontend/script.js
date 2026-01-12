@@ -140,12 +140,51 @@ function startVoice() {
     };
 }
 
-// 3️⃣ Text Emotion Analysis (Random for demo)
-function analyzeText() {
-    const emotions = ["Happy 😊","Sad 😢","Angry 😡","Calm 😌","Anxious 😟"];
-    const detected = emotions[Math.floor(Math.random() * emotions.length)];
-    document.getElementById("analyze-result").innerHTML = `Detected Emotion: <b>${detected}</b>`;
+// 3️⃣ Text Emotion Analysis (Backend Connected)
+async function analyzeText() {
+    const textArea = document.getElementById("textInput");
+    const resultDiv = document.getElementById("analyze-result");
+
+    // First click → show textarea
+    if (textArea.style.display === "none") {
+        textArea.style.display = "block";
+        textArea.focus();
+        resultDiv.innerHTML = "Enter text and click Text again to analyze.";
+        return;
+    }
+
+    const text = textArea.value.trim();
+
+    if (!text) {
+        alert("Please enter some text");
+        return;
+    }
+
+    resultDiv.innerHTML = "Analyzing emotion... ⏳";
+
+    try {
+        const response = await fetch("http://127.0.0.1:5000/analyze_text", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ text })
+        });
+
+        const data = await response.json();
+
+        resultDiv.innerHTML = `
+            <p><b>Emotion:</b> ${data.emotion}</p>
+            <p><b>Sentiment:</b> ${data.sentiment}</p>
+            <p><b>Confidence:</b> ${data.confidence}</p>
+        `;
+    } catch (error) {
+        console.error(error);
+        resultDiv.innerHTML = "❌ Error connecting to backend";
+    }
 }
+
+
 
 // 4️⃣ Optional: Analyze Text/Voice input for emotion
 function analyzeEmotionFromText(text) {
