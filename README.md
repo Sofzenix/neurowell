@@ -64,7 +64,7 @@ Step-by-step explanation of how your module works.
 - Git installed
 _______________________________________________________________________________________________________________________________________________________________________________________________________________________
 
-# ModuleNamet :voice and text emotion analysis
+# Module Name : Voice and Text emotion analysis
 
 ## 👤 Owner
 Name: Divyashree
@@ -109,31 +109,31 @@ Speech Emotion Flow
 7. Frontend displays transcribed text + emotion result.
 
 ## 🔗 Integration Points
-- Interacts With:
-Frontend Analyzer UI
-Backend Flask app (app.py)
-Analytics module (for storing mood history)
-GenAI Chatbot module (for emotionally aware responses)
+## Interacts With:
+- Frontend Analyzer UI
+- Backend Flask app (app.py)
+- Analytics module (for storing mood history)
+- GenAI Chatbot module (for emotionally aware responses)
 
-- APIs Provided:
-POST /analyze_text
-POST /analyze_speech
+## APIs Provided:
+- POST /analyze_text
+- POST /analyze_speech
 
-- Data Shared:
-Emotion label
-Sentiment
-Confidence score
-Transcribed text (for speech)
+## Data Shared:
+- Emotion label
+- Sentiment
+- Confidence score
+- Transcribed text (for speech)
 
 ## ▶️ How to Run This Module in VS Code
 
 ### 1️⃣ Prerequisites
-VS Code installed
-Python 3.10 or above
-Git installed
+- VS Code installed
+- Python 3.10 or above
+- Git installed
 
 ### 2️⃣ Clone the Repository
-git clone https://github.com/Sofzenix/neurowell.git
+git clone https://github.com/Sofzenix/neurowell.git and 
 cd neurowell
 
 ### 3️⃣ Create Virtual Environment
