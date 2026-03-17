@@ -8,7 +8,7 @@ import sqlite3
 from flask import Blueprint, jsonify, request
 import json
 from datetime import datetime
-from data_processing import DataProcessor
+from .data_processing import DataProcessor
 
 # Create Flask Blueprint for analytics API
 dashboard_bp = Blueprint('analytics', __name__, url_prefix='/api/analytics')
