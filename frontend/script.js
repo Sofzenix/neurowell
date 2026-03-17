@@ -2,8 +2,13 @@
 function login() {
   const user = document.getElementById("username").value;
   const pass = document.getElementById("password").value;
-  if (user && pass) window.location.href="dashboard.html";
-  else alert("Enter valid credentials!");
+  
+  if (user === "admin" && pass === "admin") {
+      sessionStorage.setItem("isLoggedIn", "true");
+      window.location.href = "dashboard.html";
+  } else {
+      alert("Invalid credentials! Try using admin / admin");
+  }
 }
 
 // CREATE PROFILE
@@ -17,7 +22,10 @@ function createProfile() {
 }
 
 // LOGOUT
-function logout() { window.location.href="index.html"; }
+function logout() { 
+    sessionStorage.removeItem("isLoggedIn");
+    window.location.href = "index.html"; 
+}
 
 // SIDEBAR
 function toggleSidebar() { document.getElementById("sidebar").classList.toggle("collapsed"); }
@@ -26,6 +34,9 @@ function toggleSidebar() { document.getElementById("sidebar").classList.toggle("
 function showPage(id) {
   document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
   document.getElementById(id).classList.add("active");
+  if (id === "dashboard") {
+      loadDashboard();
+  }
 }
 
 async function sendMessage() {
@@ -50,7 +61,7 @@ async function sendMessage() {
 
     try {
         // CALL FLASK BACKEND
-        const res = await fetch("http://127.0.0.1:5000/api/chat", {
+        const res = await fetch("http://127.0.0.1:5000/chat", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ message: userMsg })
@@ -63,7 +74,7 @@ async function sendMessage() {
 
         // Show reply
         chatBox.innerHTML += `
-            <div class="message bot">${data.reply}</div>
+            <div class="message bot">${data.response || data.reply || "I didn't quite get that."}</div>
         `;
     } catch (err) {
         console.error(err);
@@ -80,12 +91,104 @@ async function sendMessage() {
 
 
 // DASHBOARD CHARTS
-const radarCtx=document.getElementById("emotionRadar");
-if(radarCtx) new Chart(radarCtx,{type:"radar",data:{labels:["Happiness","Sadness","Anger","Calmness","Anxiety"],datasets:[{label:"Mood %",data:[82,40,25,70,35],backgroundColor:"rgba(44,182,125,0.3)",borderColor:"#2cb67d",borderWidth:2}]}});
-const barCtx=document.getElementById("moodBar");
-if(barCtx) new Chart(barCtx,{type:"bar",data:{labels:["Mon","Tue","Wed","Thu","Fri","Sat","Sun"],datasets:[{label:"Mood %",data:[70,75,60,82,68,80,77],backgroundColor:"#2cb67d"}]},options:{scales:{y:{beginAtZero:true,max:100}}}});
-const pieCtx=document.getElementById("moodPie");
-if(pieCtx) new Chart(pieCtx,{type:"pie",data:{labels:["Happy","Calm","Sad","Angry","Anxious"],datasets:[{data:[40,25,15,10,10],backgroundColor:["#2cb67d","#7f5af0","#f65a5a","#f5a623","#23a26f"]}]}});
+let radarChart, barChart, pieChart;
+
+async function loadDashboard() {
+    try {
+        const radarRes = await fetch("http://127.0.0.1:5001/api/analytics/charts/radar?user_id=1");
+        const radarData = await radarRes.json();
+        const radarCtx=document.getElementById("emotionRadar");
+        if(radarCtx && radarData.success) {
+            if (radarChart) radarChart.destroy();
+            radarChart = new Chart(radarCtx,{
+                type:"radar",
+                data:{
+                    labels:radarData.chart.labels,
+                    datasets:[{
+                        label:"Mood Count",
+                        data:radarData.chart.data,
+                        backgroundColor:"rgba(255, 159, 67, 0.4)",
+                        borderColor:"#FF9F43",
+                        pointBackgroundColor: "#FF4C60",
+                        borderWidth:2
+                    }]
+                },
+                options: {
+                    scales: { r: { ticks: { color: "#fff", backdropColor: "transparent" }, grid: { color: "rgba(255,255,255,0.2)" }, pointLabels: { color: "#fff", font: { size: 14 } } } },
+                    plugins: { legend: { labels: { color: "#fff" } } }
+                }
+            });
+        }
+
+        const barRes = await fetch("http://127.0.0.1:5001/api/analytics/charts/bar?user_id=1");
+        const barData = await barRes.json();
+        const barCtx=document.getElementById("moodBar");
+        if(barCtx && barData.success) {
+            if (barChart) barChart.destroy();
+            barChart = new Chart(barCtx,{
+                type:"bar",
+                data:{
+                    labels:barData.chart.labels,
+                    datasets:[{
+                        label:"Intensity",
+                        data:barData.chart.data,
+                        backgroundColor:["#FF4C60", "#FF9F43", "#F7D046", "#00E2C2", "#2cb67d", "#7B61FF", "#00D2FF"]
+                    }]
+                },
+                options:{
+                    scales:{
+                        y:{ beginAtZero:true, max:10, ticks: { color: "#fff" }, grid: { color: "rgba(255,255,255,0.1)" } },
+                        x:{ ticks: { color: "#fff" }, grid: { color: "rgba(255,255,255,0.1)" } }
+                    },
+                    plugins: { legend: { labels: { color: "#fff" } } }
+                }
+            });
+        }
+
+        const pieRes = await fetch("http://127.0.0.1:5001/api/analytics/charts/pie?user_id=1");
+        const pieData = await pieRes.json();
+        const pieCtx=document.getElementById("moodPie");
+        if(pieCtx && pieData.success) {
+            if (pieChart) pieChart.destroy();
+            pieChart = new Chart(pieCtx,{
+                type:"pie",
+                data:{
+                    labels:pieData.chart.map(d=>d.emotion),
+                    datasets:[{
+                        data:pieData.chart.map(d=>d.count),
+                        backgroundColor:["#FF4C60", "#FF9F43", "#F7D046", "#00E2C2", "#7B61FF"],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    plugins: { legend: { labels: { color: "#fff" } } }
+                }
+            });
+        }
+
+        const progRes = await fetch("http://127.0.0.1:5001/api/analytics/progress?user_id=1");
+        const progData = await progRes.json();
+        if (progData.success) {
+            const containers = document.querySelectorAll("#dashboard .floating-card");
+            if (containers.length >= 4) {
+                const container = containers[3];
+                let html = '<h2>💚 Mood Progress</h2>';
+                const colorMap = {"happy": "#FF9F43", "calm": "#00E2C2", "anxious": "#FF4C60", "sad": "#7B61FF", "stress": "#F7D046", "neutral": "#2cb67d"};
+                for (const [emotion, info] of Object.entries(progData.progress)) {
+                    const barColor = colorMap[emotion] || "#00D2FF";
+                    html += `
+                    <div class="progress-bar">
+                      <span style="font-weight: bold; margin-bottom: 8px;">${info.label}</span>
+                      <div class="progress"><div class="fill" style="width:${info.width}%; background-color: ${barColor};"></div></div>
+                    </div>`;
+                }
+                container.innerHTML = html;
+            }
+        }
+    } catch (e) {
+        console.error("Dashboard load error", e);
+    }
+}
 
 // ANALYZER
 // -----------------------
@@ -93,17 +196,53 @@ if(pieCtx) new Chart(pieCtx,{type:"pie",data:{labels:["Happy","Calm","Sad","Angr
 // -----------------------
 
 // 1️⃣ Camera Emotion Analysis
+let faceInterval;
+
 function startCamera() { 
     const video = document.getElementById("videoFeed");
+    const resultDiv = document.getElementById("analyze-result");
     
+    // Create an invisible canvas for capturing frames
+    let canvas = document.getElementById("captureCanvas");
+    if (!canvas) {
+        canvas = document.createElement("canvas");
+        canvas.id = "captureCanvas";
+        canvas.style.display = "none";
+        document.body.appendChild(canvas);
+    }
+    const ctx = canvas.getContext("2d");
+
     navigator.mediaDevices.getUserMedia({ video: true })
         .then(stream => {
             video.srcObject = stream;
             video.play();
+            resultDiv.innerText = "Analyzing face emotions...";
+            
+            // Set up interval to capture frames every 1 second
+            if (faceInterval) clearInterval(faceInterval);
+            faceInterval = setInterval(async () => {
+                if (!video.videoWidth) return;
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                const imageData = canvas.toDataURL("image/jpeg", 0.5);
+                
+                try {
+                    const res = await fetch("http://127.0.0.1:5000/analyze_face", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ image: imageData })
+                    });
+                    const data = await res.json();
+                    if (data.emotion) {
+                        resultDiv.innerHTML = `Face detected emotion: <b>${data.emotion}</b>`;
+                    }
+                } catch (e) {
+                    console.error("Face API Error:", e);
+                }
+            }, 1000);
         })
         .catch(() => alert("Camera not accessible"));
-
-    document.getElementById("analyze-result").innerText = "Analyzing face emotions...";
 }
 
 // 2️⃣ Voice-to-Text + Emotion Analysis
@@ -187,18 +326,51 @@ async function analyzeText() {
 
 
 // 4️⃣ Optional: Analyze Text/Voice input for emotion
-function analyzeEmotionFromText(text) {
-    const emotions = ["Happy 😊","Sad 😢","Angry 😡","Calm 😌","Anxious 😟"];
-    const detected = emotions[Math.floor(Math.random() * emotions.length)];
-    document.getElementById("analyze-result").innerHTML += `<br>Detected Emotion: <b>${detected}</b>`;
+async function analyzeEmotionFromText(text) {
+    const resultDiv = document.getElementById("analyze-result");
+    resultDiv.innerHTML += `<br>Analyzing text for emotion... ⏳`;
+
+    try {
+        const response = await fetch("http://127.0.0.1:5000/analyze_text", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ text })
+        });
+        const data = await response.json();
+        
+        if (data.emotion) {
+             resultDiv.innerHTML += `<br>Detected Emotion: <b>${data.emotion} (Confidence: ${data.confidence})</b>`;
+        } else {
+             resultDiv.innerHTML += `<br>Detected Emotion: <b>Error reading emotion</b>`;
+        }
+    } catch (error) {
+        console.error(error);
+        resultDiv.innerHTML += "<br>❌ Error connecting to text backend";
+    }
 }
 
 // REPORT
-function generateReport() {
-  document.getElementById("report-output").innerHTML=`
-    <h3>Neurowell Emotional Summary</h3>
-    <p>Average Mood Score: <b>82%</b></p>
-    <p>Dominant Emotion: <b>Happiness 😊</b></p>
-    <p>Suggested Improvement: <b>Mindfulness & Sleep Schedule</b></p>`;
+async function generateReport() {
+    document.getElementById("report-output").innerHTML = "Generating report...";
+    try {
+        const res = await fetch("http://127.0.0.1:5001/api/analytics/report/generate?user_id=1");
+        const data = await res.json();
+        if (data.success) {
+            document.getElementById("report-output").innerHTML = `
+                <p>Report generated successfully!</p>
+                <p>File saved as: <b>${data.pdf_file}</b></p>
+                <p>(Check backend folder for the PDF file)</p>
+            `;
+        } else {
+            document.getElementById("report-output").innerHTML = `<p>Error generating report: ${data.error}</p>`;
+        }
+    } catch (e) {
+        document.getElementById("report-output").innerHTML = `<p>Error connecting to analytics API.</p>`;
+    }
 }
  
+document.addEventListener("DOMContentLoaded", () => {
+    if (document.getElementById("dashboard")?.classList.contains("active")) {
+        loadDashboard();
+    }
+});

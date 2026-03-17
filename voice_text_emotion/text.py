@@ -18,10 +18,13 @@ def analyze_text_emotion(text):
             "error": "Empty text input"
         }
 
-    results = emotion_classifier(text)[0]
+    out = emotion_classifier(text)[0]
 
-    # Find emotion with highest confidence
-    top_emotion = max(results, key=lambda x: x["score"])
+    # Handle pipeline output variations (list of dicts vs single dict)
+    if isinstance(out, dict):
+        top_emotion = out
+    else:
+        top_emotion = max(out, key=lambda x: x["score"])
 
     emotion = top_emotion["label"]
     confidence = round(top_emotion["score"], 2)

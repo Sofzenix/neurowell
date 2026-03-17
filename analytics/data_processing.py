@@ -19,7 +19,7 @@ class DataProcessor:
     
     def __init__(self, db_path: str = "neurowell.db"):
         self.db_path = db_path
-        self.conn = sqlite3.connect(self.db_path)
+        self.conn = sqlite3.connect(self.db_path, check_same_thread=False)
         self.cursor = self.conn.cursor()
         self.create_tables()
         self.insert_sample_user()
@@ -135,9 +135,65 @@ class DataProcessor:
             "emotion_frequency": self.emotion_frequency(user_id)
         }
     
+    # ------------------ NEW: PROGRESS & STATS ------------------
+    
+    def get_progress_data(self, user_id: str) -> Dict[str, Any]:
+        """Return progress bar data based on emotion frequency"""
+        freq = self.emotion_frequency(user_id)
+        progress = {}
+        for emotion, count in freq.items():
+            progress[emotion] = {
+                "label": emotion.capitalize(),
+                "score": count,
+                "width": min(count * 10, 100)  # simple % for progress bar
+            }
+        return progress
+
+    def get_statistics(self, user_id: str) -> Dict[str, Any]:
+        """Return user statistics"""
+        df = self.fetch_user_data(user_id)
+        if df.empty:
+            return {}
+        stats = {
+            "total_entries": len(df),
+            "dominant_emotion": df['emotion'].mode()[0],
+            "average_intensity": df['intensity'].mean()
+        }
+        return stats
+
+    def generate_insights(self, user_id: str) -> List[str]:
+        """Generate simple insights based on mood data"""
+        df = self.fetch_user_data(user_id)
+        insights = []
+        if df.empty:
+            return ["No mood data available."]
+        freq = df['emotion'].value_counts()
+        dominant = freq.idxmax()
+        insights.append(f"Your most frequent emotion is {dominant}.")
+        if 'anxious' in freq and freq['anxious'] > 3:
+            insights.append("You have experienced anxiety multiple times. Consider relaxation techniques.")
+        if 'happy' in freq and freq['happy'] > 3:
+            insights.append("Great! You have been mostly happy this week.")
+        return insights
+
+    def generate_recommendations(self, user_id: str) -> List[str]:
+        """Generate simple recommendations"""
+        df = self.fetch_user_data(user_id)
+        recs = []
+        if df.empty:
+            return ["Start logging your moods for better insights."]
+        if df['emotion'].str.contains('anxious').any():
+            recs.append("Practice meditation or deep breathing to reduce anxiety.")
+        if df['emotion'].str.contains('sad').any():
+            recs.append("Engage in enjoyable activities to improve your mood.")
+        return recs
+    
     def generate_pdf_report(self, user_id: str, filename: str = None):
-        """Generate doctor-style PDF report"""
+        """Generate doctor-style PDF report with insights & recommendations"""
         data = self.prepare_dashboard_data(user_id)
+        insights = self.generate_insights(user_id)
+        recs = self.generate_recommendations(user_id)
+
         if filename is None:
             filename = f"{user_id}_mood_report.pdf"
         
@@ -169,6 +225,22 @@ class DataProcessor:
         pdf.set_font("Arial", "", 12)
         for emotion, count in data.get("emotion_frequency", {}).items():
             pdf.cell(0, 8, f"{emotion}: {count}", ln=True)
+        pdf.ln(5)
+        
+        # Insights
+        pdf.set_font("Arial", "B", 14)
+        pdf.cell(0, 10, "Insights", ln=True)
+        pdf.set_font("Arial", "", 12)
+        for insight in insights:
+            pdf.cell(0, 8, f"- {insight}", ln=True)
+        pdf.ln(5)
+        
+        # Recommendations
+        pdf.set_font("Arial", "B", 14)
+        pdf.cell(0, 10, "Recommendations", ln=True)
+        pdf.set_font("Arial", "", 12)
+        for rec in recs:
+            pdf.cell(0, 8, f"- {rec}", ln=True)
         
         pdf.output(filename)
         return filename
@@ -176,15 +248,3 @@ class DataProcessor:
     def close(self):
         """Close database connection"""
         self.conn.close()
-
-
-# ----------------------------
-# Example usage:
-# ----------------------------
-if __name__ == "__main__":
-    dp = DataProcessor()
-    dp.insert_mood("1", "happy", 8)
-    dp.insert_mood("1", "sad", 4)
-    print(dp.prepare_dashboard_data("1"))
-    dp.generate_pdf_report("1")
-    dp.close()
