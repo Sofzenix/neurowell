@@ -9,6 +9,7 @@
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <script>
     if (!sessionStorage.getItem("isLoggedIn")) {
       window.location.href = "index.html";
@@ -119,10 +120,10 @@
 
         <div id="chat-box"></div>
 
-        <form class="chat-controls" onsubmit="event.preventDefault(); sendMessage();">
-          <input type="text" id="chat-input" placeholder="Type your message..." />
-          <button type="submit" class="btn-primary">Send</button>
-        </form>
+        <div id="chat-controls-container" class="chat-controls">
+          <input type="text" id="chat-input" placeholder="Type your message..." autocomplete="off" />
+          <button type="button" class="btn-primary" id="send-btn">Send</button>
+        </div>
       </div>
     </section>
 
@@ -136,18 +137,19 @@
         <p>Analyze emotions via face, voice, and text</p>
 
         <textarea id="textInput" placeholder="Type how you are feeling..." rows="3"
-          style="width:100%; margin:10px 0; padding:10px; border-radius:8px; display:none;"></textarea>
+          style="width:100%; margin:10px 0; padding:10px; border-radius:8px; display:none;"
+          onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();analyzeText();}"></textarea>
 
 
         <!-- Controls -->
         <div class="analyzer-controls">
-          <button class="btn-primary" onclick="startCamera()">
+          <button type="button" class="btn-primary" onclick="startCamera()">
             <i class="fa-solid fa-camera"></i> Face
           </button>
-          <button class="btn-primary" onclick="startVoice()">
+          <button type="button" class="btn-primary" onclick="startVoice()">
             <i class="fa-solid fa-microphone"></i> Voice
           </button>
-          <button class="btn-primary" onclick="analyzeText()">
+          <button type="button" class="btn-primary" onclick="analyzeText()">
             <i class="fa-solid fa-file-lines"></i> Text
           </button>
         </div>
@@ -162,7 +164,7 @@
     <section id="report" class="page">
       <div class="floating-card animate-slide-up">
         <h2>📑 Generate Emotional Report</h2>
-        <button class="btn-primary" onclick="generateReport()">Generate Report</button>
+        <button type="button" class="btn-primary" onclick="generateReport()">Generate Report</button>
         <div id="report-output"></div>
       </div>
     </section>

@@ -3,6 +3,8 @@
 import speech_recognition as sr
 from voice_text_emotion.text import analyze_text_emotion
 
+from pydub import AudioSegment
+import os
 
 def analyze_speech_emotion(audio_path):
     """
@@ -15,10 +17,21 @@ def analyze_speech_emotion(audio_path):
             "error": "Audio path not provided"
         }
 
+    try:
+        # Crucial bug fix: The frontend MediaRecorder yields opaque blobs (webm/ogg).
+        # speech_recognition strictly requires PCM WAV. We use pydub to convert it dynamically!
+        wav_path = audio_path + "_converted.wav"
+        audio = AudioSegment.from_file(audio_path)
+        audio.export(wav_path, format="wav")
+    except Exception as e:
+        return {
+            "error": f"Audio processing failed, file might be corrupted: {e}"
+        }
+
     recognizer = sr.Recognizer()
 
     try:
-        with sr.AudioFile(audio_path) as source:
+        with sr.AudioFile(wav_path) as source:
             audio_data = recognizer.record(source)
 
         # Speech to text (Google Web Speech API)

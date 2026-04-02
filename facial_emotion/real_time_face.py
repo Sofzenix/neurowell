@@ -36,28 +36,31 @@ while True:
         minNeighbors=5,
         minSize=(60, 60)
     )
+    try:
+        from deepface import DeepFace
+        for (x, y, w, h) in faces:
+            face_roi_color = frame[y:y+h, x:x+w]
+            try:
+                # We enforce_detection=False to avoid crashes on bad frames
+                result = DeepFace.analyze(face_roi_color, actions=['emotion'], enforce_detection=False)
+                if isinstance(result, list):
+                    result = result[0]
+                emotion = result.get('dominant_emotion', 'Neutral').capitalize()
+            except:
+                emotion = "Neutral"
 
-    for (x, y, w, h) in faces:
-        # Simple heuristic emotion logic
-        if w > 220:
-            emotion = "Happy"
-        elif h > 220:
-            emotion = "Surprise"
-        elif w < 120:
-            emotion = "Sad"
-        else:
-            emotion = random.choice(emotions)
-
-        cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 255, 0), 2)
-        cv2.putText(
-            frame,
-            f"Emotion: {emotion}",
-            (x, y - 10),
-            cv2.FONT_HERSHEY_SIMPLEX,
-            0.9,
-            (0, 255, 0),
-            2
-        )
+            cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 255, 0), 2)
+            cv2.putText(
+                frame,
+                f"Emotion: {emotion}",
+                (x, y - 10),
+                cv2.FONT_HERSHEY_SIMPLEX,
+                0.9,
+                (0, 255, 0),
+                2
+            )
+    except ImportError:
+        cv2.putText(frame, "Waiting for DeepFace installation...", (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 0, 255), 2)
 
     cv2.imshow("Live Facial Emotion Detection", frame)
 

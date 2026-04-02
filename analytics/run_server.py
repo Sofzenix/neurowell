@@ -75,4 +75,4 @@ if __name__ == '__main__':
     print("\n🚀 Server starting on http://127.0.0.1:5001")
     print("Press Ctrl+C to stop\n")
     
-    app.run(debug=True, port=5001)
+    app.run(debug=True, port=5001, use_reloader=False)

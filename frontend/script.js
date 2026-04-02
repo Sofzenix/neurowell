@@ -353,14 +353,21 @@ async function analyzeEmotionFromText(text) {
 async function generateReport() {
     document.getElementById("report-output").innerHTML = "Generating report...";
     try {
-        const res = await fetch("http://127.0.0.1:5001/api/analytics/report/generate?user_id=1");
+        const res = await fetch("http://127.0.0.1:5000/api/analytics/report/generate?user_id=1");
         const data = await res.json();
         if (data.success) {
-            document.getElementById("report-output").innerHTML = `
-                <p>Report generated successfully!</p>
-                <p>File saved as: <b>${data.pdf_file}</b></p>
-                <p>(Check backend folder for the PDF file)</p>
-            `;
+            const element = document.createElement("div");
+            element.innerHTML = data.html;
+            const opt = {
+                margin:       0.5,
+                filename:     'mood_report.pdf',
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2 },
+                jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' },
+                pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] }
+            };
+            html2pdf().set(opt).from(element).save();
+            document.getElementById("report-output").innerHTML = `<p>Report downloaded successfully as PDF!</p>`;
         } else {
             document.getElementById("report-output").innerHTML = `<p>Error generating report: ${data.error}</p>`;
         }
@@ -369,8 +376,41 @@ async function generateReport() {
     }
 }
  
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", function() {
     if (document.getElementById("dashboard")?.classList.contains("active")) {
         loadDashboard();
     }
+
+    const sendBtn = document.getElementById("send-btn");
+    const chatInput = document.getElementById("chat-input");
+
+    if (sendBtn) {
+        sendBtn.addEventListener("click", function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            sendMessage();
+        }, true);
+    }
+
+    if (chatInput) {
+        chatInput.addEventListener("keydown", function(e) {
+            if (e.key === "Enter") {
+                e.preventDefault();
+                e.stopPropagation();
+                sendMessage();
+            }
+        }, true);
+    }
+
+    // Block ALL form submissions on the page
+    document.addEventListener("submit", function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        return false;
+    }, true);
+
+    // Block page unload caused by any accidental navigation
+    window.addEventListener("beforeunload", function(e) {
+        e.stopImmediatePropagation();
+    }, true);
 });

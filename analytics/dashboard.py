@@ -6,7 +6,7 @@ Integrated with: script.js frontend calls
 """
 from flask import Blueprint, jsonify, request
 from datetime import datetime
-from data_processing import DataProcessor
+from .data_processing import DataProcessor
 
 # Create Flask Blueprint for analytics API
 dashboard_bp = Blueprint('analytics', __name__, url_prefix='/api/analytics')
@@ -107,7 +107,8 @@ def log_mood():
         user_id = str(data.get("user_id", "1"))
         emotion = data.get("emotion", "neutral")
         intensity = int(data.get("intensity", 5))
-        processor.insert_mood(user_id, emotion, intensity)
+        source = data.get("source", "chat")
+        processor.insert_mood(user_id, emotion, intensity, source=source)
         return jsonify({"success": True, "message": "Mood logged"})
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
@@ -120,8 +121,8 @@ def generate_report():
     """Generate PDF mood report"""
     try:
         user_id = str(request.args.get("user_id", "1"))
-        filename = processor.generate_pdf_report(user_id)
-        return jsonify({"success": True, "pdf_file": filename})
+        html_content = processor.generate_pdf_report(user_id)
+        return jsonify({"success": True, "html": html_content})
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
 

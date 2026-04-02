@@ -16,6 +16,9 @@ from gen_ai_chatbot.chatbot import NeuroWellAI   # ✅ ADDED
 app = Flask(__name__)
 CORS(app)
 
+from analytics.dashboard import dashboard_bp
+app.register_blueprint(dashboard_bp)
+
 bot = NeuroWellAI()   # ✅ ADDED
 face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_frontalface_default.xml")
 
@@ -34,13 +37,12 @@ def chat():
 
     result = bot.chat(user_input)
 
-    # ✅ SAVE MOOD DATA TO ANALYTICS SERVER
     try:
         requests.post("http://127.0.0.1:5001/api/analytics/log_mood", json={
             "user_id": "1",
             "emotion": result["emotion"],
-            "intensity": 5  # default intensity, could be inferred
-        })
+            "intensity": 5
+        }, timeout=1)
     except Exception as e:
         print(f"Failed to save mood to analytics: {e}")
 
@@ -53,6 +55,18 @@ def analyze_text():
     text = data.get("text")
 
     result = analyze_text_emotion(text)
+    
+    try:
+        conf = float(result.get("confidence", "0.5")) * 100 if "confidence" in result else 80
+        requests.post("http://127.0.0.1:5001/api/analytics/log_mood", json={
+            "user_id": "1",
+            "emotion": result["emotion"].lower(),
+            "intensity": int(conf),
+            "source": "text"
+        }, timeout=1)
+    except:
+        pass
+
     return jsonify(result)
 
 
@@ -70,10 +84,27 @@ def analyze_speech():
 
     result = analyze_speech_emotion(save_path)
 
+    try:
+        conf = float(result.get("confidence", "0.5")) * 100 if "confidence" in result else 80
+        requests.post("http://127.0.0.1:5001/api/analytics/log_mood", json={
+            "user_id": "1",
+            "emotion": result["emotion"].lower(),
+            "intensity": int(conf),
+            "source": "voice"
+        }, timeout=1)
+    except:
+        pass
+
     if os.path.exists(save_path):
         os.remove(save_path)
 
     return jsonify(result)
+
+try:
+    from deepface import DeepFace
+    HAS_DEEPFACE = True
+except ImportError:
+    HAS_DEEPFACE = False
 
 # Face emotion analysis
 @app.route("/analyze_face", methods=["POST"])
@@ -89,31 +120,38 @@ def analyze_face():
         nparr = np.frombuffer(base64.b64decode(encoded_data), np.uint8)
         frame = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
 
-        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        faces = face_cascade.detectMultiScale(gray, 1.3, 5, minSize=(60, 60))
+        if frame is None:
+            return jsonify({"emotion": "Camera Error"})
 
-        if len(faces) == 0:
-            return jsonify({"emotion": "No face detected"})
+        if not HAS_DEEPFACE:
+            return jsonify({"emotion": "Still installing Video Analyzer module..."})
 
-        for (x, y, w, h) in faces:
-            # Simple heuristic emotion logic
-            if w > 220:
-                emotion = "Happy"
-            elif h > 220:
-                emotion = "Surprise"
-            elif w < 120:
-                emotion = "Sad"
-            else:
-                emotion = "Neutral"
+        # Use DeepFace for robust emotion detection
+        try:
+            # We set enforce_detection=False to avoid exceptions if face is not clear
+            result = DeepFace.analyze(frame, actions=['emotion'], enforce_detection=False)
+            if isinstance(result, list):
+                result = result[0]
+            emotion = result.get('dominant_emotion', 'neutral').capitalize()
             
+            try:
+                requests.post("http://127.0.0.1:5001/api/analytics/log_mood", json={
+                    "user_id": "1",
+                    "emotion": emotion.lower(),
+                    "intensity": 85,
+                    "source": "face"
+                }, timeout=1)
+            except:
+                pass
+                
             return jsonify({"emotion": emotion})
             
-        return jsonify({"emotion": "Face logic incomplete"})
+        except Exception as e:
+            return jsonify({"emotion": "No emotion detected", "details": str(e)})
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
 
-
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=True, use_reloader=False)

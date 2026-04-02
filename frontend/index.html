@@ -19,9 +19,11 @@
 
     <h1>Neurowell</h1>
     <p>Your AI-Powered Emotion Companion</p>
-    <input type="text" id="username" placeholder="Username (e.g., admin)" />
-    <input type="password" id="password" placeholder="Password (admin)" />
-    <button class="btn-primary" onclick="login()">Login</button>
+    <form onsubmit="login(); return false;">
+      <input type="text" id="username" placeholder="Username (e.g., admin)" />
+      <input type="password" id="password" placeholder="Password (admin)" />
+      <button type="submit" class="btn-primary">Login</button>
+    </form>
     <p>Don't have an account? <a href="create_profile.html" class="link">Create Profile</a></p>
   </div>
   <script src="script.js"></script>
