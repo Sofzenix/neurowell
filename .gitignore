@@ -10,3 +10,7 @@ __pycache__/
 
 # Hugging Face cache 
 .cache/
+neurowell.db
+venv/
+__pycache__/
+.env
