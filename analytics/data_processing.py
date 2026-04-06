@@ -20,7 +20,9 @@ import tempfile
 class DataProcessor:
     """Process emotional data for NeuroWell dashboard"""
     
-    def __init__(self, db_path: str = "neurowell.db"):
+    def __init__(self, db_path: str = None):
+        if db_path is None:
+            db_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "neurowell.db")
         self.db_path = db_path
         self.conn = sqlite3.connect(self.db_path, check_same_thread=False)
         self.cursor = self.conn.cursor()
@@ -96,9 +98,10 @@ class DataProcessor:
         self.conn.commit()
     
     def fetch_user_data(self, user_id: str) -> pd.DataFrame:
-        """Fetch all mood data for a user as a DataFrame"""
-        self.cursor.execute("SELECT emotion, intensity, timestamp, source FROM moods WHERE user_id=?", (user_id,))
-        rows = self.cursor.fetchall()
+        """Fetch all mood data for a user as a DataFrame — fresh connection to get latest data"""
+        conn = sqlite3.connect(self.db_path)
+        rows = conn.execute("SELECT emotion, intensity, timestamp, source FROM moods WHERE user_id=?", (user_id,)).fetchall()
+        conn.close()
         df = pd.DataFrame(rows, columns=["emotion", "intensity", "timestamp", "source"])
         if not df.empty:
             df['timestamp'] = pd.to_datetime(df['timestamp'])
@@ -291,23 +294,23 @@ class DataProcessor:
             <meta charset="UTF-8">
             <style>
                 body {{ font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; line-height: 1.6; color: #333; max-width: 900px; margin: auto; padding: 20px; }}
-                h1, h2, h3 {{ color: #2c3e50; border-bottom: 2px solid #ecf0f1; padding-bottom: 5px; page-break-after: avoid; }}
-                .header {{ text-align: center; margin-bottom: 30px; border-bottom: 4px solid #3498db; padding-bottom: 15px; page-break-inside: avoid; }}
-                .header h1 {{ margin: 0; color: #2980b9; border: none; }}
-                .header h2 {{ margin: 5px 0; color: #7f8c8d; font-weight: 300; border: none; }}
-                .header p {{ margin: 0; color: #95a5a6; }}
-                .patient-box {{ background: #f9f9f9; padding: 15px; border-radius: 8px; margin-bottom: 25px; border-left: 5px solid #2980b9; display: flex; justify-content: space-between; page-break-inside: avoid; }}
+                h1, h2, h3 {{ color: #1a5276; border-bottom: 2px solid #d6eaf8; padding-bottom: 5px; page-break-after: avoid; }}
+                .header {{ text-align: center; margin-bottom: 30px; background: linear-gradient(135deg, #1a5276, #2980b9); padding: 25px; border-radius: 8px; page-break-inside: avoid; }}
+                .header h1 {{ margin: 0; color: #fff; border: none; }}
+                .header h2 {{ margin: 5px 0; color: rgba(255,255,255,0.85); font-weight: 300; border: none; }}
+                .header p {{ margin: 0; color: rgba(255,255,255,0.7); }}
+                .patient-box {{ background: #eaf4fb; padding: 15px; border-radius: 8px; margin-bottom: 25px; border-left: 5px solid #2980b9; display: flex; justify-content: space-between; page-break-inside: avoid; }}
                 .patient-col p {{ margin: 5px 0; font-weight: bold; }}
                 .patient-col span {{ font-weight: normal; color: #555; }}
                 table {{ width: 100%; border-collapse: collapse; margin: 20px 0; page-break-inside: avoid; }}
                 tr {{ page-break-inside: avoid; page-break-after: auto; }}
-                th, td {{ padding: 12px; border: 1px solid #ddd; text-align: left; }}
-                th {{ background-color: #3498db; color: white; }}
-                tr:nth-child(even) {{ background-color: #f2f2f2; }}
+                th, td {{ padding: 12px; border: 1px solid #d6eaf8; text-align: left; }}
+                th {{ background: linear-gradient(135deg, #1a5276, #2980b9); color: white; }}
+                tr:nth-child(even) {{ background-color: #eaf4fb; }}
                 .metrics {{ display: flex; flex-wrap: wrap; gap: 10px; margin: 20px 0; page-break-inside: avoid; }}
-                .metric-card {{ background: #ecf0f1; border-radius: 6px; padding: 15px; width: 48%; box-sizing: border-box; font-size: 14px; box-shadow: 1px 1px 3px rgba(0,0,0,0.1); page-break-inside: avoid; }}
-                .metric-val {{ font-size: 20px; font-weight: bold; color: #2980b9; display: block; margin-top: 5px; }}
-                .footer {{ text-align: center; margin-top: 50px; font-size: 12px; color: #7f8c8d; border-top: 1px solid #ddd; padding-top: 15px; page-break-inside: avoid; }}
+                .metric-card {{ background: #eaf4fb; border-radius: 6px; padding: 15px; width: 48%; box-sizing: border-box; font-size: 14px; border-left: 4px solid #2980b9; page-break-inside: avoid; }}
+                .metric-val {{ font-size: 20px; font-weight: bold; color: #1a5276; display: block; margin-top: 5px; }}
+                .footer {{ text-align: center; margin-top: 50px; font-size: 12px; color: #7f8c8d; border-top: 1px solid #d6eaf8; padding-top: 15px; page-break-inside: avoid; }}
                 .final-note {{ background: #fff3cd; color: #856404; padding: 10px; border: 1px solid #ffeeba; border-radius: 4px; font-size: 12px; margin-top: 20px; page-break-inside: avoid; }}
                 ul, ol {{ page-break-inside: avoid; }}
                 p {{ page-break-inside: avoid; }}
@@ -339,24 +342,22 @@ class DataProcessor:
                 <div class="metric-card">Average Confidence <span class="metric-val">{avg_confidence:.1f}%</span></div>
                 <div class="metric-card">Emotional Diversity Score <span class="metric-val">{diversity_score}</span></div>
                 <div class="metric-card">Most Common Emotion <span class="metric-val">{common_emotion}</span></div>
-                <div class="metric-card" style="width: 100%;">Overall Wellness Rating <span class="metric-val">{wellness_rating}</span></div>
+                <div class="metric-card" style="width:100%">Overall Wellness Rating <span class="metric-val">{wellness_rating}</span></div>
             </div>
 
             <h3>Modality Analysis Progress</h3>
             <div style="margin: 20px 0; page-break-inside: avoid;">
                 <p style="margin: 5px 0 2px 0;"><strong>Face Analysis Score:</strong> {face_score:.1f}%</p>
-                <div style="background: #e0e0e0; border-radius: 5px; width: 100%; height: 20px;">
-                    <div style="background: #FF9F43; height: 100%; border-radius: 5px; width: {face_score}%;"></div>
+                <div style="background:#d6eaf8; border-radius:5px; width:100%; height:20px;">
+                    <div style="background:linear-gradient(90deg,#1a5276,#2980b9); height:100%; border-radius:5px; width:{min(face_score,100):.1f}%;"></div>
                 </div>
-                
                 <p style="margin: 15px 0 2px 0;"><strong>Voice Analysis Score:</strong> {voice_score:.1f}%</p>
-                <div style="background: #e0e0e0; border-radius: 5px; width: 100%; height: 20px;">
-                    <div style="background: #00E2C2; height: 100%; border-radius: 5px; width: {voice_score}%;"></div>
+                <div style="background:#d6eaf8; border-radius:5px; width:100%; height:20px;">
+                    <div style="background:linear-gradient(90deg,#1a5276,#2980b9); height:100%; border-radius:5px; width:{min(voice_score,100):.1f}%;"></div>
                 </div>
-
                 <p style="margin: 15px 0 2px 0;"><strong>Text Analysis Score:</strong> {text_score:.1f}%</p>
-                <div style="background: #e0e0e0; border-radius: 5px; width: 100%; height: 20px;">
-                    <div style="background: #7B61FF; height: 100%; border-radius: 5px; width: {text_score}%;"></div>
+                <div style="background:#d6eaf8; border-radius:5px; width:100%; height:20px;">
+                    <div style="background:linear-gradient(90deg,#1a5276,#2980b9); height:100%; border-radius:5px; width:{min(text_score,100):.1f}%;"></div>
                 </div>
             </div>
 
@@ -368,9 +369,7 @@ class DataProcessor:
                 <thead>
                     <tr><th>Emotion</th><th>Count</th><th>Percentage</th><th>Clinical Significance</th></tr>
                 </thead>
-                <tbody>
-                    {dist_rows}
-                </tbody>
+                <tbody>{dist_rows}</tbody>
             </table>
 
             <h3>Recent Assessment Log</h3>
@@ -378,9 +377,7 @@ class DataProcessor:
                 <thead>
                     <tr><th>Date/Time</th><th>Modality (Source)</th><th>Emotion</th><th>Confidence (%)</th><th>Status Description</th></tr>
                 </thead>
-                <tbody>
-                    {recent_logs}
-                </tbody>
+                <tbody>{recent_logs}</tbody>
             </table>
 
             <h3>Treatment Recommendations</h3>
@@ -399,11 +396,11 @@ class DataProcessor:
             </ol>
 
             <div class="final-note">
-                <strong>CONFIDENTIALITY NOTICE:</strong> This report contains protected health information. It is intended only for the use of the individual or entity named above. 
+                <strong>CONFIDENTIALITY NOTICE:</strong> This report contains protected health information. It is intended only for the use of the individual or entity named above.
             </div>
 
             <div class="footer">
-                Generated by NeuroWell AI System | Page 1
+                Generated by NeuroWell AI System | {datetime.now().strftime("%Y-%m-%d %H:%M")} | Page 1
             </div>
         </body>
         </html>

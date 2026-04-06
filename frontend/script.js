@@ -4,7 +4,7 @@ function login() {
   const pass = document.getElementById("password").value;
   
   if (user === "admin" && pass === "admin") {
-      sessionStorage.setItem("isLoggedIn", "true");
+      localStorage.setItem("isLoggedIn", "true");
       window.location.href = "dashboard.html";
   } else {
       alert("Invalid credentials! Try using admin / admin");
@@ -23,7 +23,7 @@ function createProfile() {
 
 // LOGOUT
 function logout() { 
-    sessionStorage.removeItem("isLoggedIn");
+    localStorage.removeItem("isLoggedIn");
     window.location.href = "index.html"; 
 }
 
@@ -95,7 +95,7 @@ let radarChart, barChart, pieChart;
 
 async function loadDashboard() {
     try {
-        const radarRes = await fetch("http://127.0.0.1:5001/api/analytics/charts/radar?user_id=1");
+        const radarRes = await fetch("http://127.0.0.1:5000/api/analytics/charts/radar?user_id=1");
         const radarData = await radarRes.json();
         const radarCtx=document.getElementById("emotionRadar");
         if(radarCtx && radarData.success) {
@@ -120,7 +120,7 @@ async function loadDashboard() {
             });
         }
 
-        const barRes = await fetch("http://127.0.0.1:5001/api/analytics/charts/bar?user_id=1");
+        const barRes = await fetch("http://127.0.0.1:5000/api/analytics/charts/bar?user_id=1");
         const barData = await barRes.json();
         const barCtx=document.getElementById("moodBar");
         if(barCtx && barData.success) {
@@ -145,7 +145,7 @@ async function loadDashboard() {
             });
         }
 
-        const pieRes = await fetch("http://127.0.0.1:5001/api/analytics/charts/pie?user_id=1");
+        const pieRes = await fetch("http://127.0.0.1:5000/api/analytics/charts/pie?user_id=1");
         const pieData = await pieRes.json();
         const pieCtx=document.getElementById("moodPie");
         if(pieCtx && pieData.success) {
@@ -166,7 +166,7 @@ async function loadDashboard() {
             });
         }
 
-        const progRes = await fetch("http://127.0.0.1:5001/api/analytics/progress?user_id=1");
+        const progRes = await fetch("http://127.0.0.1:5000/api/analytics/progress?user_id=1");
         const progData = await progRes.json();
         if (progData.success) {
             const containers = document.querySelectorAll("#dashboard .floating-card");
@@ -377,40 +377,19 @@ async function generateReport() {
 }
  
 document.addEventListener("DOMContentLoaded", function() {
-    if (document.getElementById("dashboard")?.classList.contains("active")) {
-        loadDashboard();
-    }
-
-    const sendBtn = document.getElementById("send-btn");
-    const chatInput = document.getElementById("chat-input");
+    var sendBtn = document.getElementById("send-btn");
+    var chatInput = document.getElementById("chat-input");
 
     if (sendBtn) {
-        sendBtn.addEventListener("click", function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            sendMessage();
-        }, true);
+        sendBtn.onclick = function() { sendMessage(); return false; };
     }
 
     if (chatInput) {
-        chatInput.addEventListener("keydown", function(e) {
+        chatInput.onkeydown = function(e) {
             if (e.key === "Enter") {
                 e.preventDefault();
-                e.stopPropagation();
                 sendMessage();
             }
-        }, true);
+        };
     }
-
-    // Block ALL form submissions on the page
-    document.addEventListener("submit", function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        return false;
-    }, true);
-
-    // Block page unload caused by any accidental navigation
-    window.addEventListener("beforeunload", function(e) {
-        e.stopImmediatePropagation();
-    }, true);
 });

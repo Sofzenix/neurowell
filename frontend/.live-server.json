@@ -1,0 +1,13 @@
+{
+  "ignore": [
+    ".vscode/**",
+    ".git/**",
+    "backend/**",
+    "analytics/**",
+    "*.db",
+    "*.py",
+    "*.pyc"
+  ],
+  "wait": 500,
+  "fullReload": false
+}

@@ -1,0 +1,21 @@
+{
+  "liveServer.settings.ignoreFiles": [
+    "**/*.db",
+    "**/*.db-shm",
+    "**/*.db-wal",
+    "**/*.py",
+    "**/*.pyc",
+    "**/__pycache__/**",
+    "backend/**",
+    "analytics/**",
+    "gen_ai_chatbot/**",
+    "voice_text_emotion/**",
+    "facial_emotion/**",
+    "neurowell.db"
+  ],
+  "liveServer.settings.donotVerifyTags": true,
+  "liveServer.settings.donotShowInfoMsg": true,
+  "liveServer.settings.root": "/frontend",
+  "liveServer.settings.fullReload": false,
+  "liveServer.settings.wait": 500
+}
