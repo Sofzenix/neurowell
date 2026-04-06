@@ -23,8 +23,8 @@ app.register_blueprint(dashboard_bp)
 bot = NeuroWellAI()
 face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_frontalface_default.xml")
 
-# Absolute path to shared DB
-DB_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), "neurowell.db")
+# DB stored outside project so Live Server never triggers reload
+DB_PATH = os.path.join(os.path.expanduser("~"), "AppData", "Local", "neurowell", "neurowell.db")
 
 def log_mood_direct(emotion, intensity, source="chat"):
     """Save mood directly to SQLite — no HTTP call needed"""

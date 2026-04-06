@@ -22,7 +22,7 @@ class DataProcessor:
     
     def __init__(self, db_path: str = None):
         if db_path is None:
-            db_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "neurowell.db")
+            db_path = os.path.join(os.path.expanduser("~"), "AppData", "Local", "neurowell", "neurowell.db")
         self.db_path = db_path
         self.conn = sqlite3.connect(self.db_path, check_same_thread=False)
         self.cursor = self.conn.cursor()
