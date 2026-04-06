@@ -1,25 +1,63 @@
+
 // LOGIN
 function login() {
   const user = document.getElementById("username").value;
   const pass = document.getElementById("password").value;
-  
-  if (user === "admin" && pass === "admin") {
-      localStorage.setItem("isLoggedIn", "true");
-      window.location.href = "dashboard.html";
+
+  const storedUser = localStorage.getItem("username");
+  const storedPass = localStorage.getItem("password");
+
+  if (
+    (user === storedUser && pass === storedPass) ||
+    (user === "admin" && pass === "admin")
+  ) {
+    localStorage.setItem("isLoggedIn", "true");
+    localStorage.setItem("user_id", "1");
+
+    // ✅ If admin → set default display
+    if (user === "admin") {
+      localStorage.setItem("full_name", "Admin");
+      localStorage.setItem("email", "admin@neurowell.com");
+    }
+
+    window.location.href = "dashboard.html";
   } else {
-      alert("Invalid credentials! Try using admin / admin");
+    alert("Invalid credentials!");
   }
 }
+
 
 // CREATE PROFILE
 function createProfile() {
   const name = document.getElementById("newName").value;
   const email = document.getElementById("newEmail").value;
-  if(name && email) {
+  const username = document.getElementById("newUsername").value;
+  const password = document.getElementById("newPassword").value;
+  const age = document.getElementById("newAge").value;
+  const phone = document.getElementById("newPhone").value;
+  const gender = document.getElementById("newGender").value;
+
+  if (name && email && username && password) {
+
+    localStorage.setItem("username", username);
+    localStorage.setItem("password", password);
+    localStorage.setItem("full_name", name);
+    localStorage.setItem("email", email);
+
     alert(`Profile created for ${name}!`);
-    window.location.href="index.html";
-  } else alert("Fill all fields!");
+    window.location.href = "index.html";
+
+  } else {
+    alert("Fill all fields!");
+  }
 }
+
+// LOGOUT
+function logout() { 
+    localStorage.removeItem("isLoggedIn");
+    window.location.href = "index.html"; 
+}
+
 
 // LOGOUT
 function logout() { 
@@ -358,6 +396,14 @@ async function generateReport() {
         if (data.success) {
             const element = document.createElement("div");
             element.innerHTML = data.html;
+            const name = localStorage.getItem("full_name");
+
+if (name) {
+    element.innerHTML = element.innerHTML
+        .replace(/Jayasri/g, name)
+        .replace(/Admin/g, name)
+        .replace(/Patient Name:\s*.*</, `Patient Name: ${name}<`);
+}
             const opt = {
                 margin:       0.5,
                 filename:     'mood_report.pdf',
@@ -392,4 +438,20 @@ document.addEventListener("DOMContentLoaded", function() {
             }
         };
     }
+});
+
+// ================= PROFILE LOAD (FIXED) =================
+window.addEventListener("load", function () {
+
+  const name = localStorage.getItem("full_name");
+  const email = localStorage.getItem("email");
+
+  if (!name || !email) return;
+
+  document.getElementById("profile-name").innerText = name;
+  document.getElementById("profile-email").innerText = email;
+
+  const avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random&color=fff&size=128`;
+
+  document.getElementById("profile-pic").src = avatarUrl;
 });
